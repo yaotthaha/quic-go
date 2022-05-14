@@ -244,7 +244,7 @@ func newCryptoSetup(
 		initialSealer:             initialSealer,
 		initialOpener:             initialOpener,
 		handshakeStream:           handshakeStream,
-		aead:                      newUpdatableAEAD(rttStats, tracer, logger),
+		aead:                      newUpdatableAEAD(rttStats, tracer, logger, version),
 		readEncLevel:              protocol.EncryptionInitial,
 		writeEncLevel:             protocol.EncryptionInitial,
 		runner:                    runner,
@@ -555,7 +555,7 @@ func (h *cryptoSetup) SetReadKey(encLevel qtls.EncryptionLevel, suite *qtls.Ciph
 		}
 		h.zeroRTTOpener = newLongHeaderOpener(
 			createAEAD(suite, trafficSecret),
-			newHeaderProtector(suite, trafficSecret, true),
+			newHeaderProtector(suite, trafficSecret, true, h.version),
 		)
 		h.mutex.Unlock()
 		h.logger.Debugf("Installed 0-RTT Read keys (using %s)", tls.CipherSuiteName(suite.ID))
@@ -567,7 +567,7 @@ func (h *cryptoSetup) SetReadKey(encLevel qtls.EncryptionLevel, suite *qtls.Ciph
 		h.readEncLevel = protocol.EncryptionHandshake
 		h.handshakeOpener = newHandshakeOpener(
 			createAEAD(suite, trafficSecret),
-			newHeaderProtector(suite, trafficSecret, true),
+			newHeaderProtector(suite, trafficSecret, true, h.version),
 			h.dropInitialKeys,
 			h.perspective,
 		)
@@ -595,7 +595,7 @@ func (h *cryptoSetup) SetWriteKey(encLevel qtls.EncryptionLevel, suite *qtls.Cip
 		}
 		h.zeroRTTSealer = newLongHeaderSealer(
 			createAEAD(suite, trafficSecret),
-			newHeaderProtector(suite, trafficSecret, true),
+			newHeaderProtector(suite, trafficSecret, true, h.version),
 		)
 		h.mutex.Unlock()
 		h.logger.Debugf("Installed 0-RTT Write keys (using %s)", tls.CipherSuiteName(suite.ID))
@@ -607,7 +607,7 @@ func (h *cryptoSetup) SetWriteKey(encLevel qtls.EncryptionLevel, suite *qtls.Cip
 		h.writeEncLevel = protocol.EncryptionHandshake
 		h.handshakeSealer = newHandshakeSealer(
 			createAEAD(suite, trafficSecret),
-			newHeaderProtector(suite, trafficSecret, true),
+			newHeaderProtector(suite, trafficSecret, true, h.version),
 			h.dropInitialKeys,
 			h.perspective,
 		)

@@ -46,7 +46,7 @@ func IsVersionNegotiationPacket(b []byte) bool {
 
 // Is0RTTPacket says if this is a 0-RTT packet.
 // A packet sent with a version we don't understand can never be a 0-RTT packet.
-func Is0RTTPacket(b []byte) bool {
+func Is0RTTPacket(b []byte, version protocol.VersionNumber) bool {
 	if len(b) < 5 {
 		return false
 	}
@@ -56,7 +56,10 @@ func Is0RTTPacket(b []byte) bool {
 	if !protocol.IsSupportedVersion(protocol.SupportedVersions, protocol.VersionNumber(binary.BigEndian.Uint32(b[1:5]))) {
 		return false
 	}
-	return b[0]&0x30>>4 == 0x1
+	if version == protocol.Version2 {
+		return b[0]>>4&0b11 == 0b10
+	}
+	return b[0]>>4&0b11 == 0b01
 }
 
 var ErrUnsupportedVersion = errors.New("unsupported version")
@@ -179,15 +182,28 @@ func (h *Header) parseLongHeader(b *bytes.Reader) error {
 		return ErrUnsupportedVersion
 	}
 
-	switch (h.typeByte & 0x30) >> 4 {
-	case 0x0:
-		h.Type = protocol.PacketTypeInitial
-	case 0x1:
-		h.Type = protocol.PacketType0RTT
-	case 0x2:
-		h.Type = protocol.PacketTypeHandshake
-	case 0x3:
-		h.Type = protocol.PacketTypeRetry
+	if h.Version == protocol.Version2 {
+		switch h.typeByte >> 4 & 0b11 {
+		case 0b00:
+			h.Type = protocol.PacketTypeRetry
+		case 0b01:
+			h.Type = protocol.PacketTypeInitial
+		case 0b10:
+			h.Type = protocol.PacketType0RTT
+		case 0b11:
+			h.Type = protocol.PacketTypeHandshake
+		}
+	} else {
+		switch h.typeByte >> 4 & 0b11 {
+		case 0b00:
+			h.Type = protocol.PacketTypeInitial
+		case 0b01:
+			h.Type = protocol.PacketType0RTT
+		case 0b10:
+			h.Type = protocol.PacketTypeHandshake
+		case 0b11:
+			h.Type = protocol.PacketTypeRetry
+		}
 	}
 
 	if h.Type == protocol.PacketTypeRetry {

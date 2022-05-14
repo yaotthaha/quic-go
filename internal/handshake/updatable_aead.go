@@ -55,8 +55,9 @@ type updatableAEAD struct {
 
 	rttStats *utils.RTTStats
 
-	tracer logging.ConnectionTracer
-	logger utils.Logger
+	tracer  logging.ConnectionTracer
+	logger  utils.Logger
+	version protocol.VersionNumber
 
 	// use a single slice to avoid allocations
 	nonceBuf []byte
@@ -67,7 +68,7 @@ var (
 	_ ShortHeaderSealer = &updatableAEAD{}
 )
 
-func newUpdatableAEAD(rttStats *utils.RTTStats, tracer logging.ConnectionTracer, logger utils.Logger) *updatableAEAD {
+func newUpdatableAEAD(rttStats *utils.RTTStats, tracer logging.ConnectionTracer, logger utils.Logger, version protocol.VersionNumber) *updatableAEAD {
 	return &updatableAEAD{
 		firstPacketNumber:       protocol.InvalidPacketNumber,
 		largestAcked:            protocol.InvalidPacketNumber,
@@ -77,6 +78,7 @@ func newUpdatableAEAD(rttStats *utils.RTTStats, tracer logging.ConnectionTracer,
 		rttStats:                rttStats,
 		tracer:                  tracer,
 		logger:                  logger,
+		version:                 version,
 	}
 }
 
@@ -118,7 +120,7 @@ func (a *updatableAEAD) getNextTrafficSecret(hash crypto.Hash, ts []byte) []byte
 // For the server, this function is called after SetWriteKey.
 func (a *updatableAEAD) SetReadKey(suite *qtls.CipherSuiteTLS13, trafficSecret []byte) {
 	a.rcvAEAD = createAEAD(suite, trafficSecret)
-	a.headerDecrypter = newHeaderProtector(suite, trafficSecret, false)
+	a.headerDecrypter = newHeaderProtector(suite, trafficSecret, false, a.version)
 	if a.suite == nil {
 		a.setAEADParameters(a.rcvAEAD, suite)
 	}
@@ -131,7 +133,7 @@ func (a *updatableAEAD) SetReadKey(suite *qtls.CipherSuiteTLS13, trafficSecret [
 // For the server, this function is called before SetWriteKey.
 func (a *updatableAEAD) SetWriteKey(suite *qtls.CipherSuiteTLS13, trafficSecret []byte) {
 	a.sendAEAD = createAEAD(suite, trafficSecret)
-	a.headerEncrypter = newHeaderProtector(suite, trafficSecret, false)
+	a.headerEncrypter = newHeaderProtector(suite, trafficSecret, false, a.version)
 	if a.suite == nil {
 		a.setAEADParameters(a.sendAEAD, suite)
 	}

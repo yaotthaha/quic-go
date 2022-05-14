@@ -103,11 +103,11 @@ var _ = Describe("Header Parsing", func() {
 		})
 
 		It("recognizes 0-RTT packets", func() {
-			Expect(Is0RTTPacket(zeroRTTHeader[:4])).To(BeFalse())                           // too short
-			Expect(Is0RTTPacket([]byte{zeroRTTHeader[0], 1, 2, 3, 4})).To(BeFalse())        // unknown version
-			Expect(Is0RTTPacket([]byte{zeroRTTHeader[0] | 0x80, 1, 2, 3, 4})).To(BeFalse()) // short header
-			Expect(Is0RTTPacket(zeroRTTHeader)).To(BeTrue())
-			Expect(Is0RTTPacket(append(zeroRTTHeader, []byte("foobar")...))).To(BeTrue())
+			Expect(Is0RTTPacket(zeroRTTHeader[:4], protocol.Version1)).To(BeFalse())                           // too short
+			Expect(Is0RTTPacket([]byte{zeroRTTHeader[0], 1, 2, 3, 4}, protocol.Version1)).To(BeFalse())        // unknown version
+			Expect(Is0RTTPacket([]byte{zeroRTTHeader[0] | 0x80, 1, 2, 3, 4}, protocol.Version1)).To(BeFalse()) // short header
+			Expect(Is0RTTPacket(zeroRTTHeader, protocol.Version1)).To(BeTrue())
+			Expect(Is0RTTPacket(append(zeroRTTHeader, []byte("foobar")...), protocol.Version1)).To(BeTrue())
 		})
 	})
 
