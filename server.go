@@ -12,12 +12,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/lucas-clemente/quic-go/internal/handshake"
-	"github.com/lucas-clemente/quic-go/internal/protocol"
-	"github.com/lucas-clemente/quic-go/internal/qerr"
-	"github.com/lucas-clemente/quic-go/internal/utils"
-	"github.com/lucas-clemente/quic-go/internal/wire"
-	"github.com/lucas-clemente/quic-go/logging"
+	"github.com/sagernet/quic-go/internal/handshake"
+	"github.com/sagernet/quic-go/internal/protocol"
+	"github.com/sagernet/quic-go/internal/qerr"
+	"github.com/sagernet/quic-go/internal/utils"
+	"github.com/sagernet/quic-go/internal/wire"
+	"github.com/sagernet/quic-go/logging"
 )
 
 // ErrServerClosed is returned by the Listener or EarlyListener's Accept method after a call to Close.
@@ -79,11 +79,11 @@ type baseServer struct {
 	newConn func(
 		sendConn,
 		connRunner,
-		protocol.ConnectionID, /* original dest connection ID */
+		protocol.ConnectionID,  /* original dest connection ID */
 		*protocol.ConnectionID, /* retry src connection ID */
-		protocol.ConnectionID, /* client dest connection ID */
-		protocol.ConnectionID, /* destination connection ID */
-		protocol.ConnectionID, /* source connection ID */
+		protocol.ConnectionID,  /* client dest connection ID */
+		protocol.ConnectionID,  /* destination connection ID */
+		protocol.ConnectionID,  /* source connection ID */
 		protocol.StatelessResetToken,
 		*Config,
 		*tls.Config,

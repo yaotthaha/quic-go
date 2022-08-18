@@ -1,11 +1,11 @@
 package ackhandler
 
 import (
-	"github.com/lucas-clemente/quic-go/congestion"
+	"github.com/sagernet/quic-go/congestion"
 	"time"
 
-	"github.com/lucas-clemente/quic-go/internal/protocol"
-	"github.com/lucas-clemente/quic-go/internal/wire"
+	"github.com/sagernet/quic-go/internal/protocol"
+	"github.com/sagernet/quic-go/internal/wire"
 )
 
 // A Packet is a packet
